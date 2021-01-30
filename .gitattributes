@@ -1,0 +1,17 @@
+*.cs text eol=lf
+*.json text eol=lf
+*.xml text eol=lf
+*.txt text eol=lf
+*.md text eol=lf
+*.editorconfig text eol=lf
+*.gitattributes text eol=lf
+*.gitignore text eol=lf
+
+# Collapse Unity-generated files on GitHub
+*.asset linguist-generated
+*.mat linguist-generated
+*.anim linguist-generated
+*.controller linguist-generated
+*.meta linguist-generated
+*.prefab linguist-generated
+*.unity linguist-generated
