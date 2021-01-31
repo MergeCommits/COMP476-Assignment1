@@ -23,36 +23,33 @@ public class Follower : MonoBehaviour {
     private float maxVelocity = 10f;
 
     private void Start() {
-        position = new Vector2(transform.position.x, transform.position.z);
-        orientation = transform.rotation.eulerAngles.y;
+        Transform transform1 = transform;
+        Vector3 position1 = transform1.position;
+        
+        position = new Vector2(position1.x, position1.z);
+        orientation = transform1.rotation.eulerAngles.y;
     }
 
-    // Update is called once per frame
     void FixedUpdate() {
         Kinematic kinematic = new Kinematic();
-        Vector2 targetPosition = new Vector2(target.position.x, target.position.z);
-        FollowerInput followerInput = new FollowerInput(position, targetPosition, orientation);
-        KinematicOutput kinematicOutput;
         
-        switch (uh) {
-            case Uh.Seek:
-                kinematicOutput = kinematic.PerformSeek(followerInput);
-                break;
-            case Uh.Flee:
-                kinematicOutput = kinematic.PerformFlee(followerInput);
-                break;
-            case Uh.Arrive:
-                kinematicOutput = kinematic.PerformArrive(followerInput);
-                break;
-            case Uh.Wander:
-                kinematicOutput = kinematic.PerformWander(followerInput);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        Vector3 targetPosition = target.position;
+        KinematicInput followerInput = new KinematicInput {
+            position = position,
+            velocity = velocity,
+            targetPosition = new Vector2(targetPosition.x, targetPosition.z),
+            orientation = orientation
+        };
+
+        KinematicOutput kinematicOutput = uh switch {
+            Uh.Seek => kinematic.PerformSeek(followerInput),
+            Uh.Flee => kinematic.PerformFlee(followerInput),
+            Uh.Arrive => kinematic.PerformArrive(followerInput),
+            Uh.Wander => kinematic.PerformWander(followerInput),
+            _ => throw new ArgumentOutOfRangeException()
+        };
 
         position += velocity * Time.deltaTime;
-        Debug.Log(kinematicOutput.orientation);
         orientation = kinematicOutput.orientation;
         orientation += rotation * Time.deltaTime;
 
