@@ -1,7 +1,6 @@
 using UnityEngine;
 
 public class Steering : BehaveType {
-    private const float SLOW_RADIUS = 3f;
     private const float WANDER_OFFSET = 1f;
     private const float WANDER_RADIUS = 5f;
     private float wanderOrientation = 0f;
@@ -10,12 +9,12 @@ public class Steering : BehaveType {
 
     public SteeringOutput PerformSeek(SteeringInput input) {
         Vector2 acceleration = input.targetPosition - input.position;
-        return new SteeringOutput {aceleration = acceleration, angularAcceleration = 0f};
+        return new SteeringOutput {acceleration = acceleration, angularAcceleration = 0f};
     }
 
     public SteeringOutput PerformFlee(SteeringInput input) {
         SteeringOutput steering = PerformSeek(input);
-        steering.aceleration *= -1;
+        steering.acceleration *= -1;
         return steering;
     }
 
@@ -36,7 +35,7 @@ public class Steering : BehaveType {
         targetVelocity *= targetSpeed;
 
         Vector2 acceleration = targetVelocity - input.velocity;
-        return new SteeringOutput {aceleration = acceleration, angularAcceleration = 0f};
+        return new SteeringOutput {acceleration = acceleration, angularAcceleration = 0f};
     }
 
     public SteeringOutput PerformPursue(SteeringInput input) {
@@ -54,7 +53,7 @@ public class Steering : BehaveType {
 
     public SteeringOutput PerformEvade(SteeringInput input) {
         SteeringOutput ouptut = PerformPursue(input);
-        ouptut.aceleration *= -1;
+        ouptut.acceleration *= -1;
         return ouptut;
     }
 
@@ -69,7 +68,7 @@ public class Steering : BehaveType {
         float angularAcceleration = PerformFace(input);
 
         Vector2 acceleration = input.maxAcceleration * OrientationAsVector(input.orientation);
-        return new SteeringOutput {aceleration = acceleration, angularAcceleration = angularAcceleration};
+        return new SteeringOutput {acceleration = acceleration, angularAcceleration = angularAcceleration};
     }
 
     #endregion Acceleration

@@ -4,23 +4,20 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Follower : MonoBehaviour {
-    // Start is called before the first frame update
-    public enum Uh {
-        Seek,
-        Flee,
-        Arrive,
-        Wander
-    }
+    public bool disable;
+    public Follower target;
 
-    public Uh uh;
-    public Transform target;
+    public Vector2 position;
+    public Vector2 velocity;
+    public Vector2 acceleration;
+    public float orientation;
+    public float rotation;
+    public float angularAcceleration;
 
-    private Vector2 position;
-    private Vector2 velocity;
-    private float orientation;
-    private float rotation;
+    public float maxVelocity = 10f;
+    public float maxAcceleration = 5f;
 
-    private float maxVelocity = 10f;
+    private Kinematic currentBehavior = new Kinematic();
 
     private void Start() {
         Transform transform1 = transform;
@@ -31,37 +28,10 @@ public class Follower : MonoBehaviour {
     }
 
     void FixedUpdate() {
-        Kinematic kinematic = new Kinematic();
-        
-        Vector3 targetPosition = target.position;
-        KinematicInput followerInput = new KinematicInput {
-            position = position,
-            velocity = velocity,
-            targetPosition = new Vector2(targetPosition.x, targetPosition.z),
-            orientation = orientation
-        };
-
-        KinematicOutput kinematicOutput = uh switch {
-            Uh.Seek => kinematic.PerformSeek(followerInput),
-            Uh.Flee => kinematic.PerformFlee(followerInput),
-            Uh.Arrive => kinematic.PerformArrive(followerInput),
-            Uh.Wander => kinematic.PerformWander(followerInput),
-            _ => throw new ArgumentOutOfRangeException()
-        };
-
-        position += velocity * Time.deltaTime;
-        orientation = kinematicOutput.orientation;
-        orientation += rotation * Time.deltaTime;
-
-        Transform transform1 = transform;
-        transform1.position = new Vector3(position.x, transform1.position.y, position.y);
-        transform1.eulerAngles = new Vector3(0f, -orientation * Mathf.Rad2Deg, 0f);
-        
-        velocity = kinematicOutput.velocity;
-        if (velocity.sqrMagnitude > maxVelocity * maxVelocity) {
-            velocity = velocity.normalized;
-            velocity *= maxVelocity;
+        if (!disable) {
+            currentBehavior.UpdateTargetHunt(this);
+        } else {
+            position = new Vector2(transform.position.x, transform.position.z);
         }
-        rotation = kinematicOutput.rotation;
     }
 }
