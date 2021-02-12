@@ -13,7 +13,7 @@ public class Follower : MonoBehaviour {
     [NonSerialized]
     public TeamManager teamManager;
 
-    private bool inMyOwnTerritory;
+    public bool inMyOwnTerritory { private set; get; } = true;
 
     public Vector2 position;
     public Vector2 velocity;
@@ -69,6 +69,7 @@ public class Follower : MonoBehaviour {
             case State.UnfreezeTeammate:
                 break;
             case State.FreezeHostile:
+                currentBehavior.UpdateTargetPursue(this);
                 break;
             case State.Wander:
                 break;
@@ -93,12 +94,18 @@ public class Follower : MonoBehaviour {
                 hasFlag = true;
                 SetTarget(teamManager.teamFlag.gameObject);
             }
+        } else if (IsState(State.FreezeHostile)) {
+            if (other.gameObject == target && hasFollowerScript) {
+                followerTarget.Freeze();
+                SetTarget(null);
+            }
         }
     }
 
     public void OnTriggerExit(Collider other) {
         if (other.gameObject == teamManager.teamTerritory) {
             inMyOwnTerritory = false;
+            teamManager.enemyManager.EnemyInYourTerritory(this);
         }
     }
 
@@ -110,5 +117,14 @@ public class Follower : MonoBehaviour {
             followerTarget = target.gameObject.GetComponent<Follower>();
             hasFollowerScript = followerTarget != null;
         }
+    }
+
+    public void Freeze() {
+        if (hasFlag) {
+            teamManager.enemyFlag.FlagReset();
+        }
+
+        currentState = State.Frozen;
+        
     }
 }

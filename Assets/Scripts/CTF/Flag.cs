@@ -1,18 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class Flag : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+public class Flag : MonoBehaviour {
+    private Vector3 origin;
+    
+    void Start() {
+        origin = transform.position;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+    public void FlagReset() {
+        Transform transform1 = transform;
+        transform1.parent = null;
+        transform1.position = origin;
     }
 }

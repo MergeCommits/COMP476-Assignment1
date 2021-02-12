@@ -43,7 +43,7 @@ public class Kinematic : BehaveType {
             ? MAX_PREDICTION
             : distance / speed;
 
-        input.targetPosition = input.targetVelocity * predictionTime;
+        input.targetPosition += input.targetVelocity * predictionTime;
         return PerformSeek(input);
     }
 
@@ -55,7 +55,7 @@ public class Kinematic : BehaveType {
         return new KinematicOutput {velocity = velocity, orientation = orientation, rotation = rotation};
     }
 
-    public void UpdateTargetHunt(Follower follower) {
+    private KinematicInput BuildInput(Follower follower) {
         Vector2 targetPosition = follower.hasFollowerScript
             ? follower.followerTarget.position
             : follower.target.transform.position.XZ();
@@ -72,6 +72,30 @@ public class Kinematic : BehaveType {
             targetPosition = targetPosition,
             targetVelocity = targetVelocity
         };
+
+        return followerInput;
+    }
+
+    private void ApplyOutput(Follower follower, KinematicOutput kinematicOutput) {
+        follower.position += follower.velocity * Time.deltaTime;
+        follower.orientation = kinematicOutput.orientation;
+        follower.orientation += follower.rotation * Time.deltaTime;
+
+        Transform transform1 = follower.transform;
+        transform1.position = new Vector3(follower.position.x, transform1.position.y, follower.position.y);
+        transform1.eulerAngles = new Vector3(0f, -follower.orientation * Mathf.Rad2Deg, 0f);
+
+        follower.velocity = kinematicOutput.velocity;
+        if (follower.velocity.magnitude > follower.maxVelocity) {
+            follower.velocity = follower.velocity.normalized;
+            follower.velocity *= follower.maxVelocity;
+        }
+
+        follower.rotation = kinematicOutput.rotation;
+    }
+
+    public void UpdateTargetHunt(Follower follower) {
+        KinematicInput followerInput = BuildInput(follower);
 
         KinematicOutput output = new KinematicOutput();
         if (followerInput.velocity.magnitude < SLOW_SPEED) {
@@ -119,20 +143,14 @@ public class Kinematic : BehaveType {
             }
         }
 
-        follower.position += follower.velocity * Time.deltaTime;
-        follower.orientation = output.orientation;
-        follower.orientation += follower.rotation * Time.deltaTime;
+        ApplyOutput(follower, output);
+    }
 
-        Transform transform1 = follower.transform;
-        transform1.position = new Vector3(follower.position.x, transform1.position.y, follower.position.y);
-        transform1.eulerAngles = new Vector3(0f, -follower.orientation * Mathf.Rad2Deg, 0f);
+    public void UpdateTargetPursue(Follower follower) {
+        KinematicInput followerInput = BuildInput(follower);
+        Debug.Log(followerInput.targetPosition);
+        KinematicOutput output = PerformPursue(followerInput);
 
-        follower.velocity = output.velocity;
-        if (follower.velocity.magnitude > follower.maxVelocity) {
-            follower.velocity = follower.velocity.normalized;
-            follower.velocity *= follower.maxVelocity;
-        }
-
-        follower.rotation = output.rotation;
+        ApplyOutput(follower, output);
     }
 }
