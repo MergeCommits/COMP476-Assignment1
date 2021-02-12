@@ -10,6 +10,11 @@ public class Follower : MonoBehaviour {
     public bool disable;
     public GameObject target;
 
+    [NonSerialized]
+    public TeamManager teamManager;
+
+    private bool inMyOwnTerritory;
+
     public Vector2 position;
     public Vector2 velocity;
     public Vector2 acceleration;
@@ -54,8 +59,9 @@ public class Follower : MonoBehaviour {
     void FixedUpdate() {
         switch (currentState) {
             case State.GetFlag:
-                if (!hasFlag) {
-                    currentBehavior.UpdateTargetHunt(this);
+                currentBehavior.UpdateTargetHunt(this);
+                if (hasFlag && inMyOwnTerritory) {
+                    Debug.Log("WINNER");
                 }
                 break;
             case State.Frozen:
@@ -76,11 +82,23 @@ public class Follower : MonoBehaviour {
         }
     }
 
-    public void OnTriggerStay(Collider other) {
+    public void OnTriggerEnter(Collider other) {
+        if (other.gameObject == teamManager.teamTerritory) {
+            inMyOwnTerritory = true;
+        }
+        
         if (IsState(State.GetFlag)) {
             if (other.gameObject == target) {
-                
+                other.transform.parent = transform;
+                hasFlag = true;
+                SetTarget(teamManager.teamFlag.gameObject);
             }
+        }
+    }
+
+    public void OnTriggerExit(Collider other) {
+        if (other.gameObject == teamManager.teamTerritory) {
+            inMyOwnTerritory = false;
         }
     }
 

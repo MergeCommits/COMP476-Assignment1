@@ -10,6 +10,7 @@ public class TeamManager : MonoBehaviour {
     public String teamName;
     public Flag teamFlag;
     public Flag enemyFlag;
+    public GameObject teamTerritory;
 
     private bool needToSelectNewFlagGetter;
 
@@ -18,6 +19,7 @@ public class TeamManager : MonoBehaviour {
         followers = new Follower[followerObjects.Length];
         for (int i = 0; i < followerObjects.Length; ++i) {
             followers[i] = followerObjects[i].GetComponent<Follower>();
+            followers[i].teamManager = this;
         }
 
         needToSelectNewFlagGetter = true;
