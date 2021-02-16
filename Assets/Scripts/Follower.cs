@@ -62,12 +62,13 @@ public class Follower : MonoBehaviour {
         switch (currentState) {
             case State.GetFlag:
                 currentBehavior.UpdateTargetHunt(this);
-                if (hasFlag && inMyOwnTerritory) {
-                    Debug.Log("WINNER");
-                }
                 break;
             case State.ReturnHome:
                 currentBehavior.UpdateTargetHunt(this);
+                if (inMyOwnTerritory) {
+                    SetTarget(null);
+                    currentState = State.Wander;
+                }
                 break;
             case State.Frozen:
                 break;
@@ -83,7 +84,9 @@ public class Follower : MonoBehaviour {
                 throw new ArgumentOutOfRangeException();
         }
         if (!disable) {
-            
+            if (hasFlag && inMyOwnTerritory) {
+                Debug.Log("WINNER");
+            }
         } else {
             position = transform.position.XZ();
         }
@@ -117,11 +120,6 @@ public class Follower : MonoBehaviour {
                 SetTarget(teamManager.teamFlag.gameObject);
                 currentState = State.ReturnHome;
             }
-        } else if (IsState(State.ReturnHome)) {
-            if (inMyOwnTerritory) {
-                SetTarget(null);
-                currentState = State.Wander;
-            }
         }
     }
 
@@ -143,10 +141,8 @@ public class Follower : MonoBehaviour {
     }
 
     private void Freeze() {
-        if (IsState(State.GetFlag)) {
-            if (hasFlag) {
-                teamManager.enemyFlag.FlagReset();
-            }
+        if (hasFlag) {
+            teamManager.enemyFlag.FlagReset();
         }
 
         teamManager.WasFrozenToday(this);

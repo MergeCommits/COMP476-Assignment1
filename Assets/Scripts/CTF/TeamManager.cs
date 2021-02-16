@@ -44,7 +44,7 @@ public class TeamManager : MonoBehaviour {
     private bool AreScrewed() => followers.All(f => f.IsState(Follower.State.Frozen));
 
     private void ChooseNewFlagGetter() {
-        if (teamName == "Blue") { return; }
+        // if (teamName == "Blue") { return; }
         int index = Random.Range(0, followers.Length);
         Follower follower = followers[index];
         if (!follower.IsState(Follower.State.Wander)) {
@@ -68,7 +68,6 @@ public class TeamManager : MonoBehaviour {
         // Can sometimes fire twice from OnTriggerExit, so make sure this agent isn't already in the list.
         bool wut = enemiesInTerritory.Any(e => e.enemy == follower);
         if (!wut) {
-            if (follower.gameObject.name == "Follower (2)") { return; }
             enemiesInTerritory.Add(new EnemyInTerritory {enemy = follower, assignedTo = null});
         }
     }
@@ -134,10 +133,10 @@ public class TeamManager : MonoBehaviour {
 
     public void WasFrozenToday(Follower them) {
         if (them.IsState(Follower.State.GetFlag) || them.hasFlag) {
-            // needToSelectNewFlagGetter = true;
+            needToSelectNewFlagGetter = true;
         }
         
-        frozenTeammates.Add(new FrozenTeammate() {
+        frozenTeammates.Add(new FrozenTeammate {
             frozen = them,
             assignedTo = null
         });
