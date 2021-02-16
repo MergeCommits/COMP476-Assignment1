@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditorInternal.VersionControl;
 using UnityEngine;
 
+[SelectionBase]
 public class Follower : MonoBehaviour {
     public TeamManager TeamManager;
     
@@ -34,6 +35,7 @@ public class Follower : MonoBehaviour {
 
     public enum State {
         GetFlag,
+        ReturnHome,
         Frozen,
         UnfreezeTeammate,
         FreezeHostile,
@@ -64,9 +66,13 @@ public class Follower : MonoBehaviour {
                     Debug.Log("WINNER");
                 }
                 break;
+            case State.ReturnHome:
+                currentBehavior.UpdateTargetHunt(this);
+                break;
             case State.Frozen:
                 break;
             case State.UnfreezeTeammate:
+                currentBehavior.UpdateTargetPursue(this);
                 break;
             case State.FreezeHostile:
                 currentBehavior.UpdateTargetPursue(this);
@@ -93,11 +99,28 @@ public class Follower : MonoBehaviour {
                 other.transform.parent = transform;
                 hasFlag = true;
                 SetTarget(teamManager.teamFlag.gameObject);
+                currentState = State.ReturnHome;
             }
         } else if (IsState(State.FreezeHostile)) {
             if (other.gameObject == target && hasFollowerScript) {
                 followerTarget.Freeze();
+                teamManager.FrozeTarget(followerTarget);
+                
                 SetTarget(null);
+                currentState = State.Wander;
+            }
+        } else if (IsState(State.UnfreezeTeammate)) {
+            if (other.gameObject == target && hasFollowerScript) {
+                followerTarget.UnFreeze();
+                teamManager.FrozeTarget(followerTarget);
+                
+                SetTarget(teamManager.teamFlag.gameObject);
+                currentState = State.ReturnHome;
+            }
+        } else if (IsState(State.ReturnHome)) {
+            if (inMyOwnTerritory) {
+                SetTarget(null);
+                currentState = State.Wander;
             }
         }
     }
@@ -119,12 +142,23 @@ public class Follower : MonoBehaviour {
         }
     }
 
-    public void Freeze() {
-        if (hasFlag) {
-            teamManager.enemyFlag.FlagReset();
+    private void Freeze() {
+        if (IsState(State.GetFlag)) {
+            if (hasFlag) {
+                teamManager.enemyFlag.FlagReset();
+            }
         }
 
+        teamManager.WasFrozenToday(this);
+        SetTarget(null);
         currentState = State.Frozen;
+        
+    }
+
+    private void UnFreeze() {
+        teamManager.FreedTeammate(this);
+        SetTarget(teamManager.teamFlag.gameObject);
+        currentState = State.ReturnHome;
         
     }
 }

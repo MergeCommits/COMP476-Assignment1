@@ -4,7 +4,7 @@ using UnityEngine;
 public abstract class BehaveType {
     protected const float TIME_TO_TARGET = 1f;
     protected const float SATISFACTION_RADIUS = 0.5f;
-    protected const float MAX_PREDICTION = 2.5f;
+    protected const float MAX_PREDICTION = 0.5f;
     protected const float SLOW_RADIUS = 4f;
     protected const float SLOW_SPEED = 1f;
 

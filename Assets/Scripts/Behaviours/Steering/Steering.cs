@@ -47,7 +47,7 @@ public class Steering : BehaveType {
             ? MAX_PREDICTION
             : distance / speed;
 
-        input.targetPosition = input.targetVelocity * predictionTime;
+        input.targetPosition += input.targetVelocity * predictionTime;
         return PerformSeek(input);
     }
 

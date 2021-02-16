@@ -148,7 +148,6 @@ public class Kinematic : BehaveType {
 
     public void UpdateTargetPursue(Follower follower) {
         KinematicInput followerInput = BuildInput(follower);
-        Debug.Log(followerInput.targetPosition);
         KinematicOutput output = PerformPursue(followerInput);
 
         ApplyOutput(follower, output);
