@@ -3,14 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditorInternal.VersionControl;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 [SelectionBase]
 public class Follower : MonoBehaviour {
     public bool disable;
     public GameObject target;
 
-    [NonSerialized]
-    public TeamManager teamManager;
+    [NonSerialized] public TeamManager teamManager;
 
     public bool inMyOwnTerritory { private set; get; } = true;
 
@@ -20,16 +21,12 @@ public class Follower : MonoBehaviour {
     public float orientation;
     public float rotation;
     public float angularAcceleration;
-    [NonSerialized]
-    public float maxVelocity = 5f;
-    [NonSerialized]
-    public float maxRotation = 5f;
-    [NonSerialized]
-    public float maxAcceleration = 5f;
-    [NonSerialized]
-    public float maxAngularAcceleration = 5f;
+    [NonSerialized] public float maxVelocity = 5f;
+    [NonSerialized] public float maxRotation = 5f;
+    [NonSerialized] public float maxAcceleration = 5f;
+    [NonSerialized] public float maxAngularAcceleration = 5f;
 
-    private BehaveType currentBehavior = new Steering();
+    private BehaveType currentBehavior = new Kinematic();
     public Follower followerTarget { private set; get; }
     public bool hasFollowerScript { private set; get; } = false;
 
@@ -51,12 +48,30 @@ public class Follower : MonoBehaviour {
 
     private void Start() {
         Transform transform1 = transform;
-        
+
         position = transform1.position.XZ();
         orientation = transform1.rotation.eulerAngles.y * Mathf.Deg2Rad;
         if (target != null) {
             followerTarget = target.gameObject.GetComponent<Follower>();
             hasFollowerScript = followerTarget != null;
+        }
+        
+        behaveText = GameObject.Find("Behave Text").GetComponent<Text>();
+    }
+
+    private bool toggle = false;
+    private Text behaveText;
+
+    private void Update() {
+        if (Input.GetKeyDown("space")) {
+            toggle = !toggle;
+            if (toggle) {
+                currentBehavior = new Steering();
+                behaveText.text = "Steering";
+            } else {
+                currentBehavior = new Kinematic();
+                behaveText.text = "Kinematic";
+            }
         }
     }
 
@@ -71,6 +86,7 @@ public class Follower : MonoBehaviour {
                     SetTarget(null);
                     currentState = State.Wander;
                 }
+
                 break;
             case State.Frozen:
                 velocity = Vector2.zero;
@@ -91,10 +107,12 @@ public class Follower : MonoBehaviour {
                     position += dirToOrigin * (Time.deltaTime * 4f);
                     velocity = -velocity;
                 }
+
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
+
         if (!disable) {
             if (hasFlag && inMyOwnTerritory) {
                 teamManager.Winner();
@@ -108,7 +126,7 @@ public class Follower : MonoBehaviour {
         if (other.gameObject == teamManager.teamTerritory) {
             inMyOwnTerritory = true;
         }
-        
+
         if (IsState(State.GetFlag)) {
             if (other.gameObject == target) {
                 other.transform.parent = transform;
@@ -119,7 +137,7 @@ public class Follower : MonoBehaviour {
             if (other.gameObject == target && hasFollowerScript) {
                 followerTarget.Freeze();
                 teamManager.FrozeTarget(followerTarget);
-                
+
                 SetTarget(null);
                 currentState = State.Wander;
             }
@@ -127,7 +145,7 @@ public class Follower : MonoBehaviour {
             if (other.gameObject == target && hasFollowerScript) {
                 followerTarget.UnFreeze();
                 teamManager.FrozeTarget(followerTarget);
-                
+
                 SetReturnHome();
             }
         }
@@ -164,7 +182,6 @@ public class Follower : MonoBehaviour {
         teamManager.WasFrozenToday(this);
         SetTarget(null);
         currentState = State.Frozen;
-        
     }
 
     private void UnFreeze() {
