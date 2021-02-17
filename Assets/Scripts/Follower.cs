@@ -23,11 +23,11 @@ public class Follower : MonoBehaviour {
     [NonSerialized]
     public float maxVelocity = 5f;
     [NonSerialized]
-    public float maxRotation = 2f;
+    public float maxRotation = 5f;
     [NonSerialized]
-    public float maxAcceleration = 3.5f;
+    public float maxAcceleration = 5f;
     [NonSerialized]
-    public float maxAngularAcceleration = 1.5f;
+    public float maxAngularAcceleration = 5f;
 
     private BehaveType currentBehavior = new Steering();
     public Follower followerTarget { private set; get; }

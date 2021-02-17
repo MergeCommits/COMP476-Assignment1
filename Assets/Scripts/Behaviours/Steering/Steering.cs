@@ -65,7 +65,6 @@ public class Steering : BehaveType {
 
         input.targetPosition = target;
         input.targetOrientation = targetOrientation;
-        Debug.Log(input.targetOrientation);
         float angularAcceleration = PerformFace(input);
 
         Vector2 acceleration = input.maxAcceleration * OrientationAsVector(input.orientation);
@@ -261,6 +260,7 @@ public class Steering : BehaveType {
     public override void UpdateTargetPursue(Follower follower) {
         SteeringInput followerInput = BuildInput(follower);
         SteeringOutput output = PerformPursue(followerInput);
+        output.angularAcceleration = PerformLookWhereYouGoing(followerInput);
 
         ApplyOutput(follower, output);
     }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class TeamManager : MonoBehaviour {
@@ -14,6 +15,7 @@ public class TeamManager : MonoBehaviour {
     public Flag enemyFlag;
     public GameObject teamTerritory;
     public TeamManager enemyManager;
+    private Text winText;
 
     private bool needToSelectNewFlagGetter;
 
@@ -30,6 +32,7 @@ public class TeamManager : MonoBehaviour {
         }
 
         needToSelectNewFlagGetter = true;
+        winText = GameObject.Find("Win Text").GetComponent<Text>();
     }
 
     void FixedUpdate() {
@@ -49,7 +52,13 @@ public class TeamManager : MonoBehaviour {
             follower.currentState = Follower.State.Frozen;
         }
         gameOver = true;
+        
+        foreach (Follower follower in enemyManager.followers) {
+            follower.currentState = Follower.State.Frozen;
+        }
         enemyManager.gameOver = true;
+
+        winText.text = teamName + " Team Wins";
     }
 
     private bool AreScrewed() => followers.All(f => f.IsState(Follower.State.Frozen));
