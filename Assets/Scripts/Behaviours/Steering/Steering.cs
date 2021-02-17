@@ -202,11 +202,24 @@ public class Steering : BehaveType {
         follower.angularAcceleration = Mathf.Clamp(steeringOutput.angularAcceleration, -follower.maxAngularAcceleration, follower.maxAngularAcceleration);
     }
 
-    public override void UpdateTargetHunt(Follower follower) {
+    public override void UpdateTargetHunt(Follower follower, bool fleeing) {
         SteeringInput followerInput = BuildInput(follower);
 
         SteeringOutput output = new SteeringOutput();
-        if (followerInput.velocity.magnitude < SLOW_SPEED) {
+        if (fleeing) {
+            // C.1
+            if (Vector2.Distance(followerInput.position, followerInput.targetPosition) < SLOW_RADIUS) {
+                // Debug.Log("C1");
+                output = PerformFlee(followerInput);
+                output.angularAcceleration = PerformLookWhereYouGoing(followerInput);
+            } else {
+                // C.2
+                // Debug.Log("C2");
+
+                output = PerformEvade(followerInput);
+                output.angularAcceleration = PerformFaceAway(followerInput);
+            }
+        } else if (followerInput.velocity.magnitude < SLOW_SPEED) {
             // A.1
             if (Vector2.Distance(followerInput.position, followerInput.targetPosition) < SLOW_RADIUS) {
                 // Debug.Log("A1");

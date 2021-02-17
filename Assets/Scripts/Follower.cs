@@ -44,6 +44,8 @@ public class Follower : MonoBehaviour {
 
     public bool IsState(State state) => currentState == state;
 
+    private bool fleeing = false;
+
     private void Start() {
         Transform transform1 = transform;
 
@@ -79,6 +81,10 @@ public class Follower : MonoBehaviour {
                 SceneManager.LoadScene("SampleScene");
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.C)) {
+            fleeing = !fleeing;
+        }
     }
 
     void FixedUpdate() {
@@ -100,10 +106,10 @@ public class Follower : MonoBehaviour {
 
         switch (currentState) {
             case State.GetFlag:
-                currentBehavior.UpdateTargetHunt(this);
+                currentBehavior.UpdateTargetHunt(this, false);
                 break;
             case State.ReturnHome:
-                currentBehavior.UpdateTargetHunt(this);
+                currentBehavior.UpdateTargetHunt(this, false);
                 if (inMyOwnTerritory) {
                     SetTarget(null);
                     currentState = State.Wander;
@@ -132,7 +138,7 @@ public class Follower : MonoBehaviour {
 
                 break;
             case State.Custom:
-                currentBehavior.UpdateTargetHunt(this);
+                currentBehavior.UpdateTargetHunt(this, fleeing);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

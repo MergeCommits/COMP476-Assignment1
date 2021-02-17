@@ -99,11 +99,36 @@ public class Kinematic : BehaveType {
         follower.rotation = Mathf.Clamp(kinematicOutput.rotation, -follower.maxRotation, follower.maxRotation);
     }
 
-    public override void UpdateTargetHunt(Follower follower) {
+    public override void UpdateTargetHunt(Follower follower, bool fleeing) {
         KinematicInput followerInput = BuildInput(follower);
 
         KinematicOutput output = new KinematicOutput();
-        if (followerInput.velocity.magnitude < SLOW_SPEED) {
+        if (fleeing) {
+            // C.1
+            if (Vector2.Distance(followerInput.position, followerInput.targetPosition) < SLOW_RADIUS) {
+                // Debug.Log("C1");
+                output = PerformFlee(followerInput);
+                output.orientation = followerInput.orientation;
+                output.rotation = 0f;
+            } else {
+                // C.2
+                // Debug.Log("C2");
+
+                Vector2 targetRotationVect = followerInput.targetPosition - followerInput.position;
+                float targetOrientation = Mathf.Atan2(targetRotationVect.y, targetRotationVect.x) + Mathf.PI;
+
+                const float ANGLE_TOLERANCE = 10f;
+                if (AngleDifferenceNegligible(followerInput.orientation, targetOrientation, ANGLE_TOLERANCE)) {
+                    output = PerformFlee(followerInput);
+                } else {
+                    output.velocity = Vector2.zero;
+                    output.orientation = Mathf.LerpAngle(followerInput.orientation * Mathf.Rad2Deg,
+                        targetOrientation * Mathf.Rad2Deg, Time.deltaTime * 5f);
+                    output.orientation *= Mathf.Deg2Rad;
+                    output.rotation = 0f;
+                }
+            }
+        } else if (followerInput.velocity.magnitude < SLOW_SPEED) {
             // A.1
             if (Vector2.Distance(followerInput.position, followerInput.targetPosition) < SLOW_RADIUS) {
                 // Debug.Log("A1");

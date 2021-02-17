@@ -18,7 +18,7 @@ public abstract class BehaveType {
         return Mathf.Abs(angleDifferenceBetween) < tolerance;
     }
 
-    public abstract void UpdateTargetHunt(Follower follower);
+    public abstract void UpdateTargetHunt(Follower follower, bool fleeing);
     public abstract void UpdateTargetPursue(Follower follower);
     public abstract void UpdateWander(Follower follower);
 }
