@@ -6,8 +6,6 @@ using UnityEngine;
 
 [SelectionBase]
 public class Follower : MonoBehaviour {
-    public TeamManager TeamManager;
-    
     public bool disable;
     public GameObject target;
 
@@ -25,11 +23,13 @@ public class Follower : MonoBehaviour {
     [NonSerialized]
     public float maxVelocity = 5f;
     [NonSerialized]
-    public float maxRotation = 20f;
+    public float maxRotation = 2f;
     [NonSerialized]
-    public float maxAcceleration = 2.5f;
+    public float maxAcceleration = 3.5f;
+    [NonSerialized]
+    public float maxAngularAcceleration = 1.5f;
 
-    private Kinematic currentBehavior = new Kinematic();
+    private BehaveType currentBehavior = new Steering();
     public Follower followerTarget { private set; get; }
     public bool hasFollowerScript { private set; get; } = false;
 
@@ -53,7 +53,7 @@ public class Follower : MonoBehaviour {
         Transform transform1 = transform;
         
         position = transform1.position.XZ();
-        orientation = transform1.rotation.eulerAngles.y;
+        orientation = transform1.rotation.eulerAngles.y * Mathf.Deg2Rad;
         if (target != null) {
             followerTarget = target.gameObject.GetComponent<Follower>();
             hasFollowerScript = followerTarget != null;
@@ -73,6 +73,7 @@ public class Follower : MonoBehaviour {
                 }
                 break;
             case State.Frozen:
+                velocity = Vector2.zero;
                 break;
             case State.UnfreezeTeammate:
                 currentBehavior.UpdateTargetPursue(this);

@@ -99,7 +99,7 @@ public class Kinematic : BehaveType {
         follower.rotation = Mathf.Clamp(kinematicOutput.rotation, -follower.maxRotation, follower.maxRotation);
     }
 
-    public void UpdateTargetHunt(Follower follower) {
+    public override void UpdateTargetHunt(Follower follower) {
         KinematicInput followerInput = BuildInput(follower);
 
         KinematicOutput output = new KinematicOutput();
@@ -151,14 +151,14 @@ public class Kinematic : BehaveType {
         ApplyOutput(follower, output);
     }
 
-    public void UpdateTargetPursue(Follower follower) {
+    public override void UpdateTargetPursue(Follower follower) {
         KinematicInput followerInput = BuildInput(follower);
         KinematicOutput output = PerformPursue(followerInput);
 
         ApplyOutput(follower, output);
     }
 
-    public void UpdateWander(Follower follower) {
+    public override void UpdateWander(Follower follower) {
         KinematicInput followerInput = BuildInput(follower);
         KinematicOutput output = PerformWander(followerInput);
 

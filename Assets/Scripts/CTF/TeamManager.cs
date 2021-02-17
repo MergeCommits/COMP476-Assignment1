@@ -43,6 +43,8 @@ public class TeamManager : MonoBehaviour {
     private bool gameOver = false;
 
     public void Winner() {
+        if (gameOver) { return; }
+        
         foreach (Follower follower in followers) {
             follower.currentState = Follower.State.Frozen;
         }

@@ -17,4 +17,8 @@ public abstract class BehaveType {
         float angleDifferenceBetween = Mathf.DeltaAngle(currentOrientation * Mathf.Rad2Deg, targetOrientation * Mathf.Rad2Deg);
         return Mathf.Abs(angleDifferenceBetween) < tolerance;
     }
+
+    public abstract void UpdateTargetHunt(Follower follower);
+    public abstract void UpdateTargetPursue(Follower follower);
+    public abstract void UpdateWander(Follower follower);
 }
