@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditorInternal.VersionControl;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
 
@@ -38,7 +39,8 @@ public class Follower : MonoBehaviour {
         Frozen,
         UnfreezeTeammate,
         FreezeHostile,
-        Wander
+        Wander,
+        Custom
     }
 
     // [NonSerialized]
@@ -55,7 +57,7 @@ public class Follower : MonoBehaviour {
             followerTarget = target.gameObject.GetComponent<Follower>();
             hasFollowerScript = followerTarget != null;
         }
-        
+
         behaveText = GameObject.Find("Behave Text").GetComponent<Text>();
     }
 
@@ -73,9 +75,33 @@ public class Follower : MonoBehaviour {
                 behaveText.text = "Kinematic";
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.E)) {
+            if (SceneManager.GetActiveScene().name == "SampleScene") {
+                SceneManager.LoadScene("SampleScene 1");
+            } else {
+                SceneManager.LoadScene("SampleScene");
+            }
+        }
     }
 
     void FixedUpdate() {
+        if (disable) {
+            float speed = Input.GetKey("left shift") ? 20f : 10f;
+
+            if (Input.GetKey(KeyCode.A))
+                transform.Translate(Vector3.left * (Time.deltaTime * speed));
+            if (Input.GetKey(KeyCode.D))
+                transform.Translate(Vector3.right * (Time.deltaTime * speed));
+            if (Input.GetKey(KeyCode.W))
+                transform.Translate(Vector3.forward * (Time.deltaTime * speed));
+            if (Input.GetKey(KeyCode.S))
+                transform.Translate(Vector3.back * (Time.deltaTime * speed));
+
+            position = transform.position.XZ();
+            return;
+        }
+
         switch (currentState) {
             case State.GetFlag:
                 currentBehavior.UpdateTargetHunt(this);
@@ -109,21 +135,20 @@ public class Follower : MonoBehaviour {
                 }
 
                 break;
+            case State.Custom:
+                currentBehavior.UpdateTargetHunt(this);
+                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
 
-        if (!disable) {
-            if (hasFlag && inMyOwnTerritory) {
-                teamManager.Winner();
-            }
-        } else {
-            position = transform.position.XZ();
+        if (hasFlag && inMyOwnTerritory) {
+            teamManager.Winner();
         }
     }
 
     public void OnTriggerEnter(Collider other) {
-        if (other.gameObject == teamManager.teamTerritory) {
+        if (teamManager != null && other.gameObject == teamManager.teamTerritory) {
             inMyOwnTerritory = true;
         }
 
@@ -152,7 +177,7 @@ public class Follower : MonoBehaviour {
     }
 
     public void OnTriggerExit(Collider other) {
-        if (other.gameObject == teamManager.teamTerritory) {
+        if (teamManager != null && other.gameObject == teamManager.teamTerritory) {
             inMyOwnTerritory = false;
             teamManager.enemyManager.EnemyInYourTerritory(this);
         }
