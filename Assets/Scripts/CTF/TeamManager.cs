@@ -33,32 +33,47 @@ public class TeamManager : MonoBehaviour {
     }
 
     void FixedUpdate() {
-        if (needToSelectNewFlagGetter) {
-            ChooseNewFlagGetter();
-        }
+        if (gameOver) { return; }
 
+        ChooseNewFlagGetter();
         UpdateEnemiesInTerritory();
         UpdateFreeingTeammates();
+    }
+
+    private bool gameOver = false;
+
+    public void Winner() {
+        foreach (Follower follower in followers) {
+            follower.currentState = Follower.State.Frozen;
+        }
+        gameOver = true;
+        enemyManager.gameOver = true;
     }
 
     private bool AreScrewed() => followers.All(f => f.IsState(Follower.State.Frozen));
 
     private void ChooseNewFlagGetter() {
-        // if (teamName == "Blue") { return; }
-        int index = Random.Range(0, followers.Length);
-        Follower follower = followers[index];
-        if (!follower.IsState(Follower.State.Wander)) {
-            return;
+        if (!needToSelectNewFlagGetter) {
+            needToSelectNewFlagGetter = !followers.Any(f => f.IsState(Follower.State.GetFlag))
+                && !followers.Any(f => f.hasFlag);
         }
 
-        needToSelectNewFlagGetter = false;
+        if (needToSelectNewFlagGetter) {
+            int index = Random.Range(0, followers.Length);
+            Follower follower = followers[index];
+            if (!follower.IsState(Follower.State.Wander)) {
+                return;
+            }
 
-        follower.currentState = Follower.State.GetFlag;
-        follower.SetTarget(enemyFlag.gameObject);
+            needToSelectNewFlagGetter = false;
+
+            follower.currentState = Follower.State.GetFlag;
+            follower.SetTarget(enemyFlag.gameObject);
+        }
     }
 
     #region TerritoryControl
-    
+
     class EnemyInTerritory {
         public Follower enemy;
         public Follower assignedTo = null;
@@ -105,7 +120,7 @@ public class TeamManager : MonoBehaviour {
     public void FrozeTarget(Follower target) {
         enemiesInTerritory.Remove(enemiesInTerritory.SingleOrDefault(s => s.enemy == target));
     }
-    
+
     #endregion TerritoryControl
 
     #region FrozenTeammates
@@ -132,14 +147,7 @@ public class TeamManager : MonoBehaviour {
     }
 
     public void WasFrozenToday(Follower them) {
-        if (them.IsState(Follower.State.GetFlag) || them.hasFlag) {
-            needToSelectNewFlagGetter = true;
-        }
-        
-        frozenTeammates.Add(new FrozenTeammate {
-            frozen = them,
-            assignedTo = null
-        });
+        frozenTeammates.Add(new FrozenTeammate {frozen = them, assignedTo = null});
     }
 
     public void FreedTeammate(Follower them) {

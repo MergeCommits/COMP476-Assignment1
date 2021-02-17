@@ -25,6 +25,8 @@ public class Follower : MonoBehaviour {
     [NonSerialized]
     public float maxVelocity = 5f;
     [NonSerialized]
+    public float maxRotation = 20f;
+    [NonSerialized]
     public float maxAcceleration = 2.5f;
 
     private Kinematic currentBehavior = new Kinematic();
@@ -42,7 +44,7 @@ public class Follower : MonoBehaviour {
         Wander
     }
 
-    [NonSerialized]
+    // [NonSerialized]
     public State currentState = State.Wander;
 
     public bool IsState(State state) => currentState == state;
@@ -79,13 +81,22 @@ public class Follower : MonoBehaviour {
                 currentBehavior.UpdateTargetPursue(this);
                 break;
             case State.Wander:
+                currentBehavior.UpdateWander(this);
+                if (!inMyOwnTerritory) {
+                    SetReturnHome();
+                } else if (Vector2.Distance(position, Vector2.zero) > 25f) {
+                    Vector2 dirToOrigin = -position;
+                    // If this position is out of the circle then take a few steps back and reverse your direction.
+                    position += dirToOrigin * (Time.deltaTime * 4f);
+                    velocity = -velocity;
+                }
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
         if (!disable) {
             if (hasFlag && inMyOwnTerritory) {
-                Debug.Log("WINNER");
+                teamManager.Winner();
             }
         } else {
             position = transform.position.XZ();
@@ -101,8 +112,7 @@ public class Follower : MonoBehaviour {
             if (other.gameObject == target) {
                 other.transform.parent = transform;
                 hasFlag = true;
-                SetTarget(teamManager.teamFlag.gameObject);
-                currentState = State.ReturnHome;
+                SetReturnHome();
             }
         } else if (IsState(State.FreezeHostile)) {
             if (other.gameObject == target && hasFollowerScript) {
@@ -117,8 +127,7 @@ public class Follower : MonoBehaviour {
                 followerTarget.UnFreeze();
                 teamManager.FrozeTarget(followerTarget);
                 
-                SetTarget(teamManager.teamFlag.gameObject);
-                currentState = State.ReturnHome;
+                SetReturnHome();
             }
         }
     }
@@ -140,9 +149,15 @@ public class Follower : MonoBehaviour {
         }
     }
 
+    private void SetReturnHome() {
+        currentState = State.ReturnHome;
+        SetTarget(teamManager.teamFlag.gameObject);
+    }
+
     private void Freeze() {
         if (hasFlag) {
             teamManager.enemyFlag.FlagReset();
+            hasFlag = false;
         }
 
         teamManager.WasFrozenToday(this);
@@ -153,8 +168,6 @@ public class Follower : MonoBehaviour {
 
     private void UnFreeze() {
         teamManager.FreedTeammate(this);
-        SetTarget(teamManager.teamFlag.gameObject);
-        currentState = State.ReturnHome;
-        
+        SetReturnHome();
     }
 }

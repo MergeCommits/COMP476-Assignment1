@@ -50,7 +50,7 @@ public class Kinematic : BehaveType {
     private KinematicOutput PerformWander(KinematicInput input) {
         Vector2 velocity = new Vector2(input.maxVelocity, input.maxVelocity) * OrientationAsVector(input.orientation);
         float orientation = input.orientation;
-        float rotation = RandomBinomial();
+        float rotation = RandomBinomial() * input.maxRotation;
 
         return new KinematicOutput {velocity = velocity, orientation = orientation, rotation = rotation};
     }
@@ -58,7 +58,11 @@ public class Kinematic : BehaveType {
     private KinematicInput BuildInput(Follower follower) {
         Vector2 targetPosition = follower.hasFollowerScript
             ? follower.followerTarget.position
-            : follower.target.transform.position.XZ();
+            : Vector2.zero;
+        if (!follower.hasFollowerScript && follower.target != null) {
+            targetPosition = follower.target.transform.position.XZ();
+        }
+        
         Vector2 targetVelocity = follower.hasFollowerScript
             ? follower.followerTarget.velocity
             : Vector2.zero;
@@ -69,6 +73,7 @@ public class Kinematic : BehaveType {
             velocity = follower.velocity,
             orientation = follower.orientation,
             maxVelocity = follower.maxVelocity,
+            maxRotation = follower.maxRotation,
             targetPosition = targetPosition,
             targetVelocity = targetVelocity
         };
@@ -91,7 +96,7 @@ public class Kinematic : BehaveType {
             follower.velocity *= follower.maxVelocity;
         }
 
-        follower.rotation = kinematicOutput.rotation;
+        follower.rotation = Mathf.Clamp(kinematicOutput.rotation, -follower.maxRotation, follower.maxRotation);
     }
 
     public void UpdateTargetHunt(Follower follower) {
@@ -149,6 +154,13 @@ public class Kinematic : BehaveType {
     public void UpdateTargetPursue(Follower follower) {
         KinematicInput followerInput = BuildInput(follower);
         KinematicOutput output = PerformPursue(followerInput);
+
+        ApplyOutput(follower, output);
+    }
+
+    public void UpdateWander(Follower follower) {
+        KinematicInput followerInput = BuildInput(follower);
+        KinematicOutput output = PerformWander(followerInput);
 
         ApplyOutput(follower, output);
     }
