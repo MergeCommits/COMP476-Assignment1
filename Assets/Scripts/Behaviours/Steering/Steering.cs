@@ -128,7 +128,16 @@ public class Steering : BehaveType {
         return PerformAlign(input);
     }
 
-    public float PerformFaceAway(SteeringInput input) => -PerformFace(input);
+    public float PerformFaceAway(SteeringInput input) {
+        float angularAcceleration = PerformFace(input);
+        if (angularAcceleration > 0f) {
+            angularAcceleration -= Mathf.PI;
+        } else {
+            angularAcceleration += Mathf.PI;
+        }
+
+        return angularAcceleration;
+    }
 
     public float PerformLookWhereYouGoing(SteeringInput input) {
         if (Mathf.Approximately(input.velocity.sqrMagnitude, 0f)) {
