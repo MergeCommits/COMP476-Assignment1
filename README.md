@@ -1,3 +1,9 @@
+## Tools
+| Tool  |  Version  |   
+|---|---|
+| Unity | 2020.2.2f1 | 
+| Input System | 1.0.2 |
+
 # Controls
 Press space to swap between Kinematic and Steering behaviors.
 Press E to swap between CTF and Heuristics demonstration.
